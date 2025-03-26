@@ -5,72 +5,88 @@
 //  Created by Giorgi Zautashvili on 25.03.25.
 //
 
-
 import UIKit
 
 class FavoritesViewController: UIViewController {
     
+    private let tableView = UITableView()
     private let viewModel = FavoritesViewModel()
-    
-    private let tableView: UITableView = {
-        let tableView = UITableView()
-        tableView.translatesAutoresizingMaskIntoConstraints = false
-        return tableView
-    }()
+    private var favoriteMovies: [Movie] = []
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        title = "Favorites"
-        view.backgroundColor = .systemBackground
-        
         setupTableView()
-        setupLayout()
-        viewModel.fetchFavorites()
+        loadFavorites()
+        title = "Favorites"
+        view.backgroundColor = UIColor(red: 0/255, green: 0/255, blue: 60/255, alpha: 1)
+        tableView.backgroundColor = UIColor(red: 0/255, green: 0/255, blue: 60/255, alpha: 1)
+        
+        navigationController?.navigationBar.titleTextAttributes = [
+            .foregroundColor: UIColor.systemYellow
+        ]
     }
-    
-    override func viewWillAppear(_ animated: Bool) {
-            super.viewWillAppear(animated)
-            viewModel.fetchFavorites() 
-            tableView.reloadData()
-        }
     
     private func setupTableView() {
         view.addSubview(tableView)
-        
+        tableView.translatesAutoresizingMaskIntoConstraints = false
         tableView.dataSource = self
-        tableView.register(UITableViewCell.self, forCellReuseIdentifier: "FavoriteMovieCell")
-    }
-    
-    private func setupLayout() {
+        tableView.delegate = self
+        tableView.backgroundColor = UIColor(red: 0/255, green: 0/255, blue: 60/255, alpha: 1)
+        tableView.register(FavoritesCell.self, forCellReuseIdentifier: "FavoritesCell")
+        
         NSLayoutConstraint.activate([
-            tableView.topAnchor.constraint(equalTo: view.topAnchor),
+            tableView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
             tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+            tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
         ])
     }
     
-    private func configureNavigationBar() {
-        navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Favorites", style: .plain, target: self, action: #selector(showFavorites))
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        viewModel.fetchFavoriteMovies()
+        loadFavorites()
     }
-
-    @objc private func showFavorites() {
-        let favoritesVC = FavoritesViewController()
-        navigationController?.pushViewController(favoritesVC, animated: true)
+    
+    private func loadFavorites() {
+        favoriteMovies = FavoritesManager.shared.getAllFavorites()
+        print("Favorites screen: \(favoriteMovies)")
+        tableView.reloadData()
+    }
+    
+    private func bindViewModel() {
+        viewModel.reloadTableView = { [weak self] in
+            DispatchQueue.main.async {
+                self?.tableView.reloadData()
+            }
+        }
+        viewModel.fetchFavoriteMovies()
     }
     
 }
 
-
-extension FavoritesViewController: UITableViewDataSource {
+extension FavoritesViewController: UITableViewDataSource, UITableViewDelegate {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return viewModel.favoriteMovies.count
+        viewModel.favoriteMovies.count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "FavoriteMovieCell", for: indexPath)
-        let movie = viewModel.favoriteMovies[indexPath.row]
-        cell.textLabel?.text = movie.title
+        guard let cell = tableView.dequeueReusableCell(withIdentifier: "FavoritesCell", for: indexPath) as? FavoritesCell else {
+            return UITableViewCell()
+        }
+        let movie = viewModel.getMovie(at: indexPath.row)
+        cell.configure(with: movie)
         return cell
     }
+    
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        let selectedMovie = viewModel.getMovie(at: indexPath.row)
+        let detailViewModel = MovieDetailViewModel(movie: selectedMovie, movieID: selectedMovie.id)
+        let detailVC = MovieDetailViewController(viewModel: detailViewModel)
+        navigationController?.pushViewController(detailVC, animated: true)
+    }
+    
+    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+            return 100
+        }
 }

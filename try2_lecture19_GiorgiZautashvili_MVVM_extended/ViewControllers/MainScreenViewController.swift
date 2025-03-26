@@ -15,7 +15,7 @@ class MainScreenViewController: UIViewController {
     private var isFavoritesView = false
     
     var favoriteMovies: [Movie] {
-        return FavoritesManager.shared.getFavorites()
+        return FavoritesManager.shared.getAllFavorites()
     }
     
     let favoriteButton: UIButton = {
@@ -85,27 +85,13 @@ class MainScreenViewController: UIViewController {
         if isFavoritesView {
             favoriteButton.setImage(UIImage(systemName: "star.fill"), for: .normal)
         } else {
-            favoriteButton.setImage(UIImage(systemName: "star"), for: .normal)
+            favoriteButton.setImage(UIImage(systemName: "star.fill"), for: .normal)
         }
     }
     
     @objc private func toggleFavorite() {
-        guard let selectedMovie = selectedMovie else {
-                print("No movie selected!")
-                return
-            }
-            
-            if FavoritesManager.shared.isFavorite(movie: selectedMovie) {
-                FavoritesManager.shared.removeFavorite(movie: selectedMovie)
-                print("\(selectedMovie.title) removed from favorites")
-            } else {
-                FavoritesManager.shared.addFavorite(movie: selectedMovie)
-                print("\(selectedMovie.title) added to favorites")
-            }
-            
-            isFavoritesView.toggle()
-            fetchMovies()
-            updateFavoriteButton()
+        let favoritesVC = FavoritesViewController()
+        navigationController?.pushViewController(favoritesVC, animated: true)
     }
     
     
