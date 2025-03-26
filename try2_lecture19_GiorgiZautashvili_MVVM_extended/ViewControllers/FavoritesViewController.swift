@@ -11,7 +11,7 @@ class FavoritesViewController: UIViewController {
     
     private let tableView = UITableView()
     private let viewModel = FavoritesViewModel()
-    private var favoriteMovies: [Movie] = []
+    var favoriteMovies: [Movie] = []
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -60,9 +60,13 @@ class FavoritesViewController: UIViewController {
                 self?.tableView.reloadData()
             }
         }
-        viewModel.fetchFavoriteMovies()
+        viewModel.onRemoveButtonTapped = { [weak self] movie in
+            FavoritesManager.shared.removeFavorite(movie: movie)
+            self?.loadFavorites()
+        }
+        
+//        viewModel.fetchFavoriteMovies()
     }
-    
 }
 
 extension FavoritesViewController: UITableViewDataSource, UITableViewDelegate {
@@ -76,6 +80,13 @@ extension FavoritesViewController: UITableViewDataSource, UITableViewDelegate {
         }
         let movie = viewModel.getMovie(at: indexPath.row)
         cell.configure(with: movie)
+        
+        cell.onRemoveButtonTapped = { [weak self] in
+            FavoritesManager.shared.removeFavorite(movie: movie)
+            self?.viewModel.fetchFavoriteMovies()
+            self?.loadFavorites()
+        }
+        
         return cell
     }
     

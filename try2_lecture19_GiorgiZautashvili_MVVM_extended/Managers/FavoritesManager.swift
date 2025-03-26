@@ -7,7 +7,6 @@
 
 import Foundation
 
-
 class FavoritesManager {
     static let shared = FavoritesManager()
     
@@ -25,7 +24,9 @@ class FavoritesManager {
     }
     
     func removeFavorite(movie: Movie) {
-        favoriteMovies.removeAll { $0.id == movie.id }
+        if let index = favoriteMovies.firstIndex(where: { $0.id == movie.id }) {
+            favoriteMovies.remove(at: index)
+        }
     }
     
     func isFavorite(movie: Movie) -> Bool {
@@ -35,9 +36,6 @@ class FavoritesManager {
     private func saveFavorites() {
         if let encodedData = try? JSONEncoder().encode(favoriteMovies) {
             UserDefaults.standard.set(encodedData, forKey: self.favoritesKey)
-            print("Favorites saved: \(favoriteMovies)")
-        } else {
-            print("Failed to encode favorite movies")
         }
     }
     
@@ -45,9 +43,6 @@ class FavoritesManager {
         if let savedData = UserDefaults.standard.data(forKey: self.favoritesKey),
            let decodedMovies = try? JSONDecoder().decode([Movie].self, from: savedData) {
             favoriteMovies = decodedMovies
-            print("Favorites loaded: \(favoriteMovies)")
-        } else {
-            print("Failed to load favorite movies or no data found")
         }
     }
     

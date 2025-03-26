@@ -83,18 +83,19 @@ class MainScreenViewController: UIViewController {
     
     private func updateFavoriteButton() {
         if isFavoritesView {
-            favoriteButton.setImage(UIImage(systemName: "star.fill"), for: .normal)
+            favoriteButton.setImage(UIImage(systemName: "star"), for: .normal)
         } else {
             favoriteButton.setImage(UIImage(systemName: "star.fill"), for: .normal)
         }
     }
     
     @objc private func toggleFavorite() {
+        isFavoritesView = true
+        updateFavoriteButton()
         let favoritesVC = FavoritesViewController()
+        favoritesVC.favoriteMovies = FavoritesManager.shared.getAllFavorites()
         navigationController?.pushViewController(favoritesVC, animated: true)
     }
-    
-    
     
     private func setupMovieCollection() {
         view.addSubview(movieCollection)

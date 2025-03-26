@@ -16,6 +16,8 @@ class FavoritesViewModel {
         }
     }
     
+    var onRemoveButtonTapped: ((Movie) -> Void)?
+    
     var reloadTableView: (() -> Void)?
     
     func fetchFavoriteMovies() {

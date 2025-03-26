@@ -12,6 +12,10 @@ class FavoritesCell: UITableViewCell {
     
     private let movieTitleLabel = UILabel()
     private let moviePosterImageView = UIImageView()
+    private let removeButton = UIButton(type: .system)
+    private var movie: Movie? 
+    
+    var onRemoveButtonTapped: (() -> Void)?
     
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
@@ -33,8 +37,14 @@ class FavoritesCell: UITableViewCell {
         moviePosterImageView.clipsToBounds = true
         moviePosterImageView.layer.cornerRadius = 8
         
+        removeButton.translatesAutoresizingMaskIntoConstraints = false
+        removeButton.setImage(UIImage(systemName: "trash.fill"), for: .normal)
+        removeButton.tintColor = .red
+        removeButton.addTarget(self, action: #selector(removeButtonTapped), for: .touchUpInside)
+        
         contentView.addSubview(moviePosterImageView)
         contentView.addSubview(movieTitleLabel)
+        contentView.addSubview(removeButton)
         
         NSLayoutConstraint.activate([
             moviePosterImageView.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 40),
@@ -44,12 +54,19 @@ class FavoritesCell: UITableViewCell {
             
             movieTitleLabel.leadingAnchor.constraint(equalTo: moviePosterImageView.trailingAnchor, constant: 10),
             movieTitleLabel.centerYAnchor.constraint(equalTo: centerYAnchor),
-            movieTitleLabel.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -10)
+            movieTitleLabel.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -10),
+            
+            removeButton.centerYAnchor.constraint(equalTo: centerYAnchor),
+            removeButton.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -10)
         ])
     }
     
+    @objc func removeButtonTapped() {
+        onRemoveButtonTapped?()
+    }
+    // for github commit
     func configure(with movie: Movie) {
-        
+        self.movie = movie
         movieTitleLabel.text = movie.title
         
         if let posterPath = movie.posterPath, let imageUrl = URL(string: "https://image.tmdb.org/t/p/w500\(posterPath)") {
@@ -57,6 +74,11 @@ class FavoritesCell: UITableViewCell {
         } else {
             moviePosterImageView.image = UIImage(named: "default_poster")
         }
+        
+        onRemoveButtonTapped = { [weak self] in
+            self?.onRemoveButtonTapped?()
+        }
+        
     }
     
     private func loadImage(from url: URL) {
