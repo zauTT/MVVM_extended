@@ -10,16 +10,31 @@ import UIKit
 
 class MovieDetailViewController: UIViewController {
     
-    private var viewModel: MovieDetailViewModel?
+    var viewModel: MovieDetailViewModel?
+    var favoriteMovie: [Movie] = []
+    private var movie: Movie
     
-    init(viewModel: MovieDetailViewModel) {
+    init(viewModel: MovieDetailViewModel, movie: Movie) {
         self.viewModel = viewModel
+        self.movie = movie
         super.init(nibName: nil, bundle: nil)
     }
     
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
+    
+    private let scrollView: UIScrollView = {
+       let scrollview = UIScrollView()
+        scrollview.translatesAutoresizingMaskIntoConstraints = false
+        return scrollview
+    }()
+    
+    private let contentView: UIView = {
+        let view = UIView()
+        view.translatesAutoresizingMaskIntoConstraints = false
+        return view
+    }()
     
     let titleLabel: UILabel = {
         let label = UILabel()
@@ -52,6 +67,14 @@ class MovieDetailViewController: UIViewController {
         return imageView
     }()
     
+    let favoriteButton: UIButton = {
+        let button = UIButton(type: .custom)
+        button.translatesAutoresizingMaskIntoConstraints = false
+        button.setImage(UIImage(systemName: "star"), for: .normal)
+        button.tintColor = .systemYellow
+        return button
+    }()
+    
     let descriptionLabel: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
@@ -59,6 +82,7 @@ class MovieDetailViewController: UIViewController {
         label.textColor = .lightGray
         label.numberOfLines = 0
         label.textAlignment = .center
+        label.lineBreakMode = .byWordWrapping
         return label
     }()
     
@@ -74,34 +98,67 @@ class MovieDetailViewController: UIViewController {
                 self?.descriptionLabel.text = "Movie description: \(self?.viewModel?.movieDescription ?? "No description available")"
             }
         }
+        
+        favoriteButton.addTarget(self, action: #selector(favoritesButtonTapped), for: .touchUpInside)
     }
     
     private func setupUI() {
-        view.addSubview(posterImageView)
-        view.addSubview(titleLabel)
-        view.addSubview(popularityLabel)
-        view.addSubview(releaseDateLabel)
-        view.addSubview(descriptionLabel)
+        view.addSubview(scrollView)
+        scrollView.addSubview(contentView)
+        
+        contentView.addSubview(posterImageView)
+        contentView.addSubview(titleLabel)
+        contentView.addSubview(popularityLabel)
+        contentView.addSubview(releaseDateLabel)
+        contentView.addSubview(descriptionLabel)
+        contentView.addSubview(favoriteButton)
         
         NSLayoutConstraint.activate([
-            titleLabel.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 20),
-            titleLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            scrollView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            scrollView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            scrollView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            scrollView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            
+            contentView.topAnchor.constraint(equalTo: scrollView.topAnchor),
+            contentView.leadingAnchor.constraint(equalTo: scrollView.leadingAnchor),
+            contentView.trailingAnchor.constraint(equalTo: scrollView.trailingAnchor),
+            contentView.bottomAnchor.constraint(equalTo: scrollView.bottomAnchor),
+            contentView.widthAnchor.constraint(equalTo: scrollView.widthAnchor),
+            
+            titleLabel.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 20),
+            titleLabel.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
             
             posterImageView.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 20),
-            posterImageView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            posterImageView.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
             posterImageView.widthAnchor.constraint(equalToConstant: 250),
             posterImageView.heightAnchor.constraint(equalToConstant: 375),
             
+            favoriteButton.bottomAnchor.constraint(equalTo: posterImageView.bottomAnchor, constant: -10),
+            favoriteButton.trailingAnchor.constraint(equalTo: posterImageView.trailingAnchor, constant: -10),
+            
             popularityLabel.topAnchor.constraint(equalTo: posterImageView.bottomAnchor, constant: 20),
-            popularityLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            popularityLabel.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
             
             releaseDateLabel.topAnchor.constraint(equalTo: popularityLabel.bottomAnchor, constant: 10),
-            releaseDateLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            releaseDateLabel.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
             
             descriptionLabel.topAnchor.constraint(equalTo: releaseDateLabel.bottomAnchor, constant: 20),
-            descriptionLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
-            descriptionLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
+            descriptionLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 20),
+            descriptionLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -20),
+            descriptionLabel.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -10)
         ])
+    }
+    
+    @objc func favoritesButtonTapped() {
+        guard viewModel != nil else { return }
+        
+        if FavoritesManager.shared.isFavorite(movie: movie) {
+            FavoritesManager.shared.removeFavorite(movie: movie)
+            favoriteButton.setImage(UIImage(systemName: "star"), for: .normal)
+        } else {
+            FavoritesManager.shared.addFavorite(movie: movie)
+            favoriteButton.setImage(UIImage(systemName: "star.fill"), for: .normal)
+        }
     }
     
     private func configureUI() {
@@ -120,5 +177,8 @@ class MovieDetailViewController: UIViewController {
                 }
             }
         }
+        
+        let starImage = FavoritesManager.shared.isFavorite(movie: movie) ? "star.fill" : "star"
+        favoriteButton.setImage(UIImage(systemName: starImage), for: .normal)
     }
 }

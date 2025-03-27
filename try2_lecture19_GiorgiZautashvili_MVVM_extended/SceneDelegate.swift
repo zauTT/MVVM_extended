@@ -8,7 +8,7 @@
 import UIKit
 
 class SceneDelegate: UIResponder, UIWindowSceneDelegate {
-
+    
     var window: UIWindow?
     
     func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
@@ -17,21 +17,36 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         
         window = UIWindow(windowScene: scene)
         
-        let mainScreen = MainScreenViewController()
-        let navController = UINavigationController(rootViewController: mainScreen)
-        window?.rootViewController = UINavigationController(rootViewController: MainScreenViewController())
-        window?.rootViewController = navController
+        let mainNavController = UINavigationController(rootViewController: MainScreenViewController())
+        let profileNavController = UINavigationController(rootViewController: ProfileViewController())
+        let favoritesNavController = UINavigationController(rootViewController: FavoritesViewController())
+        
+        let tabBarController = UITabBarController()
+        tabBarController.viewControllers = [
+            createTabItem(for: mainNavController, title: "Movies", imageName: "film"),
+            createTabItem(for: profileNavController, title: "Profile", imageName: "person.circle"),
+            createTabItem(for: favoritesNavController, title: "Favorites", imageName: "heart")
+        ]
+        
+        window?.rootViewController = tabBarController
         window?.makeKeyAndVisible()
     }
     
+    private func createTabItem(for rootVC: UIViewController, title: String, imageName: String) -> UIViewController {
+        rootVC.tabBarItem.title = title
+        rootVC.tabBarItem.image = UIImage(systemName: imageName)
+        return rootVC
+    }
+    
+    
     func sceneDidDisconnect(_ scene: UIScene) { }
-
+    
     func sceneDidBecomeActive(_ scene: UIScene) { }
-
+    
     func sceneWillResignActive(_ scene: UIScene) { }
-
+    
     func sceneWillEnterForeground(_ scene: UIScene) { }
-
+    
     func sceneDidEnterBackground(_ scene: UIScene) { }
-
+    
 }

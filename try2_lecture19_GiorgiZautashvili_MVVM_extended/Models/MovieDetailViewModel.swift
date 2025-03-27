@@ -63,7 +63,6 @@ class MovieDetailViewModel {
             completion(UIImage(named: "placeholderImage"))
             return
         }
-        
         URLSession.shared.dataTask(with: url) { data, _, _ in
             if let data = data {
                 DispatchQueue.main.async {

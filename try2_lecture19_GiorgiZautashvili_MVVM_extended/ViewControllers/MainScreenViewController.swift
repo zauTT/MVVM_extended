@@ -134,7 +134,7 @@ extension MainScreenViewController: UICollectionViewDataSource, UICollectionView
         if let selectedMovie = viewModel.getMovie(at: indexPath.row) {
             self.selectedMovie = selectedMovie
             let detailViewModel = MovieDetailViewModel(movie: selectedMovie, movieID: selectedMovie.id)
-            let detailVC = MovieDetailViewController(viewModel: detailViewModel)
+            let detailVC = MovieDetailViewController(viewModel: detailViewModel, movie: selectedMovie)
             navigationController?.pushViewController(detailVC, animated: true)
         }
     }

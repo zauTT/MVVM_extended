@@ -64,7 +64,7 @@ class FavoritesCell: UITableViewCell {
     @objc func removeButtonTapped() {
         onRemoveButtonTapped?()
     }
-    // for github commit
+    
     func configure(with movie: Movie) {
         self.movie = movie
         movieTitleLabel.text = movie.title
