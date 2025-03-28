@@ -14,6 +14,9 @@ class MovieCell: UICollectionViewCell {
     let titleLabel = UILabel()
     let popularityLabel = UILabel()
     let releaseDateLabel = UILabel()
+    var movie: Movie?
+    
+    var favoriteButtonTapped: (() -> Void)?
     
     private let addFavoriteButton: UIButton = {
         let button = UIButton(type: .custom)
@@ -100,6 +103,7 @@ class MovieCell: UICollectionViewCell {
         let favoriteIconName = isFavorite ? "star.fill" : "star"
         addFavoriteButton.setImage(UIImage(systemName: favoriteIconName), for: .normal)
         
+        addFavoriteButton.addTarget(self, action: #selector(didTapFavoriteButton), for: .touchUpInside)
     }
     
     @objc private func addToFavorites() {
@@ -110,6 +114,15 @@ class MovieCell: UICollectionViewCell {
         } else {
             FavoritesManager.shared.addFavorite(movie: movie)
             addFavoriteButton.setImage(UIImage(systemName: "star.fill"), for: .normal)
+        }
+        favoriteButtonTapped?()
+    }
+    
+    @objc private func didTapFavoriteButton() {
+        if let movie = movie {
+            print("Adding movie to favorites: \(movie.title)")
+            FavoritesManager.shared.addFavorite(movie: movie)
+            favoriteButtonTapped?()
         }
     }
     

@@ -36,6 +36,7 @@ class MainScreenViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+
         view.backgroundColor = UIColor(red: 0/255, green: 0/255, blue: 60/255, alpha: 1)
         
         viewModel = MainScreenViewModel()
@@ -90,6 +91,13 @@ class MainScreenViewController: UIViewController {
     }
     
     @objc private func toggleFavorite() {
+        
+        print("Toggle Favorite Button Pressed")
+        
+        if let movie = selectedMovie {
+            FavoritesManager.shared.addFavorite(movie: movie)
+            shakeFavoritesButton()
+        }
         isFavoritesView = true
         updateFavoriteButton()
         let favoritesVC = FavoritesViewController()
@@ -113,6 +121,24 @@ class MainScreenViewController: UIViewController {
         movieCollection.dataSource = self
         movieCollection.register(MovieCell.self, forCellWithReuseIdentifier: "MovieCell")
     }
+    
+    private func shakeFavoritesButton() {
+        favoriteButton.isUserInteractionEnabled = false
+        
+        favoriteButton.layer.removeAnimation(forKey: "shake")
+        
+        let shakeAnimation = CAKeyframeAnimation(keyPath: "transform.translation.x")
+        shakeAnimation.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
+        shakeAnimation.values = [-10, 10, -8, 8, -5, 5, 0]
+        shakeAnimation.keyTimes = [0, 0.2, 0.4, 0.6, 0.8, 1, 1]
+        shakeAnimation.duration = 0.5
+        
+        favoriteButton.layer.add(shakeAnimation, forKey: "shake")
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+            self.favoriteButton.isUserInteractionEnabled = true
+        }
+    }
 }
 
 extension MainScreenViewController: UICollectionViewDataSource, UICollectionViewDelegate {
@@ -127,12 +153,18 @@ extension MainScreenViewController: UICollectionViewDataSource, UICollectionView
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "MovieCell", for: indexPath) as! MovieCell
         let movieCellViewModel = MovieCellViewModel(movie: movie)
         cell.configure(with: movieCellViewModel)
+        
+        cell.favoriteButtonTapped = { [weak self] in
+            self?.shakeFavoritesButton()
+        }
+        
         return cell
     }
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         if let selectedMovie = viewModel.getMovie(at: indexPath.row) {
             self.selectedMovie = selectedMovie
+//            print("Movie Selected: \(selectedMovie.title)")
             let detailViewModel = MovieDetailViewModel(movie: selectedMovie, movieID: selectedMovie.id)
             let detailVC = MovieDetailViewController(viewModel: detailViewModel, movie: selectedMovie)
             navigationController?.pushViewController(detailVC, animated: true)
