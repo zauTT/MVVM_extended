@@ -39,7 +39,7 @@ class FavoritesCell: UITableViewCell {
         
         removeButton.translatesAutoresizingMaskIntoConstraints = false
         removeButton.setImage(UIImage(systemName: "trash.fill"), for: .normal)
-        removeButton.tintColor = .red
+        removeButton.tintColor = .darkGray
         removeButton.addTarget(self, action: #selector(removeButtonTapped), for: .touchUpInside)
         
         contentView.addSubview(moviePosterImageView)

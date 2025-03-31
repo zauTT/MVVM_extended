@@ -164,7 +164,6 @@ extension MainScreenViewController: UICollectionViewDataSource, UICollectionView
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         if let selectedMovie = viewModel.getMovie(at: indexPath.row) {
             self.selectedMovie = selectedMovie
-//            print("Movie Selected: \(selectedMovie.title)")
             let detailViewModel = MovieDetailViewModel(movie: selectedMovie, movieID: selectedMovie.id)
             let detailVC = MovieDetailViewController(viewModel: detailViewModel, movie: selectedMovie)
             navigationController?.pushViewController(detailVC, animated: true)
