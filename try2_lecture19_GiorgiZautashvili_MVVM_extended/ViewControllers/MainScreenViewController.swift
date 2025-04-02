@@ -9,13 +9,18 @@ import UIKit
 import LocalAuthentication
 
 
+import Foundation
+import UIKit
+import LocalAuthentication
+
+
 class MainScreenViewController: UIViewController {
     
     private var viewModel = MainScreenViewModel()
     private var selectedMovie: Movie?
     private var isFavoritesView = false
-//    var blurView: UIVisualEffectView?
-
+    var blurView: UIVisualEffectView?
+    
     var favoriteMovies: [Movie] {
         return FavoritesManager.shared.getAllFavorites()
     }
@@ -53,19 +58,25 @@ class MainScreenViewController: UIViewController {
         setupMovieCollection()
         bindViewModel()
         viewModel.fetchMovies()
-        
-//        let blurEffect = UIBlurEffect(style: .dark)
-//        let blurView = UIVisualEffectView(effect: blurEffect)
-//
-//        blurView.frame = view.bounds
-//        blurView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
-//        blurView.isHidden = true
-//        view.addSubview(blurView)
-
-
-        
         authenticateUser()
-        
+    }
+    
+    private func showBlurEffect(_ show: Bool) {
+        if show {
+            if blurView == nil {
+                let blurEffect = UIBlurEffect(style: .dark)
+                let blurView = UIVisualEffectView(effect: blurEffect)
+                blurView.frame = view.bounds
+                blurView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+                view.addSubview(blurView)
+                self.blurView = blurView
+            }
+        } else {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak self] in
+                self?.blurView?.removeFromSuperview()
+                self?.blurView = nil
+            }
+        }
     }
     
     private func bindViewModel() {
@@ -156,9 +167,9 @@ class MainScreenViewController: UIViewController {
     }
     
     private func authenticateUser() {
-
-//        blurView?.isHidden = false
-
+        
+        showBlurEffect(true)
+        
         let context = LAContext()
         var error: NSError?
         
@@ -170,11 +181,10 @@ class MainScreenViewController: UIViewController {
                     if success {
                         print("Authentication successful")
                         self?.viewModel.fetchMovies()
-//                        self?.blurView?.isHidden = true
+                        self?.showBlurEffect(false)
                     } else {
                         print("Authentication failed: \(authenticationError?.localizedDescription ?? "Unknown error")")
                         self?.showAuthFailedAlert()
-//                        self?.blurView?.isHidden = true
                     }
                 }
             }
@@ -213,7 +223,6 @@ extension MainScreenViewController: UICollectionViewDataSource, UICollectionView
         cell.favoriteButtonTapped = { [weak self] in
             self?.shakeFavoritesButton()
         }
-        
         return cell
     }
     
