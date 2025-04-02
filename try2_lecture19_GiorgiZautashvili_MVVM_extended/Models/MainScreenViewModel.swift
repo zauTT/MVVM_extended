@@ -11,9 +11,9 @@ class MainScreenViewModel {
     
     private var moviesArray: [Movie] = []
     var favoriteMoviesArray: [Movie] = []
-    var reloadCollectionView: (() -> Void)?
     private let favoritesManager = FavoritesManager.shared
     
+    var reloadCollectionView: (() -> Void)?
     var onMoviesUpdated: (() -> Void)?
     
     var numberOfMovies: Int {
@@ -65,6 +65,5 @@ class MainScreenViewModel {
         } else {
             fetchMovies()
         }
-        
     }
 }

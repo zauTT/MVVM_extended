@@ -1,3 +1,4 @@
+
 import Foundation
 import UIKit
 
@@ -15,8 +16,6 @@ final class ProfileViewController: UIViewController {
     private let favoritesButton = UIButton(frame: .zero)
     private let linkButton = UIButton(frame: .zero)
     
-    private var name = "სახელი, გვარი"
-    
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = UIColor(red: 0/255, green: 0/255, blue: 45/255, alpha: 1)
@@ -24,6 +23,9 @@ final class ProfileViewController: UIViewController {
         setupBackgroundImage()
         setupProfileImageView()
         setupBindings()
+        
+        nameLabel.text = viewModel.getProfileName()
+        imageView.image = viewModel.getProfileImage() ?? UIImage(systemName: "person.circle")
     }
     
     init() {
@@ -63,10 +65,10 @@ final class ProfileViewController: UIViewController {
     private func updateUI() {
         nameLabel.text = viewModel.getProfileName()
         imageView.image = UIImage(named: viewModel.userProfile.profileImage)
+        
     }
     
     private func setupProfileImageView() {
-        imageView.image = UIImage(named: "camera")
         imageView.isUserInteractionEnabled = true
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(changeProfilePicture))
             imageView.addGestureRecognizer(tapGesture)
@@ -92,7 +94,7 @@ final class ProfileViewController: UIViewController {
         let screenHeight = UIScreen.main.bounds.height
         
         let backgroundImageView = UIImageView(frame: CGRect(x: 0, y: 0, width: screenWidth, height: screenHeight / 4))
-        backgroundImageView.image = UIImage(named: "camera")
+        backgroundImageView.image = viewModel.getCoverImage() ?? UIImage(named: "camera")
         backgroundImageView.contentMode = .scaleAspectFill
         backgroundImageView.isUserInteractionEnabled = true
             let tapGesture = UITapGestureRecognizer(target: self, action: #selector(changeCoverPhoto))
@@ -117,7 +119,7 @@ final class ProfileViewController: UIViewController {
         nameLabel.font = UIFont.systemFont(ofSize: 24, weight: .bold)
         nameLabel.textColor = .lightGray
         nameLabel.textAlignment = .center
-        nameLabel.text = name
+        nameLabel.text = viewModel.getProfileName()
     }
     
     private func addEditButton() {
@@ -145,9 +147,11 @@ final class ProfileViewController: UIViewController {
         navigationController?.pushViewController(editProfileVC, animated: true)
     }
     
-    func updateName(_ newName: String) {
-        name = newName
-        nameLabel.text = newName
+    func updateProfileName(_ name: String) {
+        viewModel.userProfile.name = name
+        viewModel.saveProfileName()
+//        UserDefaults.standard.set(name, forKey: "profileName")
+        viewModel.onProfileUpdate?()
     }
     
     private func addDescriptionLbl() {
@@ -294,9 +298,11 @@ extension ProfileViewController: UIImagePickerControllerDelegate, UINavigationCo
         if let selectedImage = info[.editedImage] as? UIImage ?? info[.originalImage] as? UIImage {
             if picker.view.tag == 1 {
                 self.imageView.image = selectedImage
+                viewModel.saveProfileImage(selectedImage)
             } else {
                 if let backgroundView = self.view.subviews.first(where: { $0 is UIImageView && $0 != imageView }) as? UIImageView {
                     backgroundView.image = selectedImage
+                    viewModel.saveCoverImage(selectedImage)
                 }
             }
         }

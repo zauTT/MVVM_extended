@@ -19,5 +19,7 @@
 			</array>
 		</dict>
 	</dict>
+    <key>NSFaceIDUsageDescription</key>
+    <string>We need Face ID to authenticate you before showing movies.</string>
 </dict>
 </plist>

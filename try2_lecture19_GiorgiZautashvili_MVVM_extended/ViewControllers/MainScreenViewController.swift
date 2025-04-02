@@ -4,16 +4,18 @@
 //
 //  Created by Giorgi Zautashvili on 22.03.25.
 //
-
 import Foundation
 import UIKit
+import LocalAuthentication
+
 
 class MainScreenViewController: UIViewController {
     
     private var viewModel = MainScreenViewModel()
     private var selectedMovie: Movie?
     private var isFavoritesView = false
-    
+//    var blurView: UIVisualEffectView?
+
     var favoriteMovies: [Movie] {
         return FavoritesManager.shared.getAllFavorites()
     }
@@ -36,7 +38,7 @@ class MainScreenViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-
+        
         view.backgroundColor = UIColor(red: 0/255, green: 0/255, blue: 60/255, alpha: 1)
         
         viewModel = MainScreenViewModel()
@@ -51,6 +53,19 @@ class MainScreenViewController: UIViewController {
         setupMovieCollection()
         bindViewModel()
         viewModel.fetchMovies()
+        
+//        let blurEffect = UIBlurEffect(style: .dark)
+//        let blurView = UIVisualEffectView(effect: blurEffect)
+//
+//        blurView.frame = view.bounds
+//        blurView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+//        blurView.isHidden = true
+//        view.addSubview(blurView)
+
+
+        
+        authenticateUser()
+        
     }
     
     private func bindViewModel() {
@@ -138,6 +153,47 @@ class MainScreenViewController: UIViewController {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
             self.favoriteButton.isUserInteractionEnabled = true
         }
+    }
+    
+    private func authenticateUser() {
+
+//        blurView?.isHidden = false
+
+        let context = LAContext()
+        var error: NSError?
+        
+        if context.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: &error) {
+            let reason = "Authenticate to access movies!"
+            
+            context.evaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, localizedReason: reason) { [weak self] success, authenticationError in
+                DispatchQueue.main.async {
+                    if success {
+                        print("Authentication successful")
+                        self?.viewModel.fetchMovies()
+//                        self?.blurView?.isHidden = true
+                    } else {
+                        print("Authentication failed: \(authenticationError?.localizedDescription ?? "Unknown error")")
+                        self?.showAuthFailedAlert()
+//                        self?.blurView?.isHidden = true
+                    }
+                }
+            }
+        } else {
+            print("Biometric authentication is not available: \(error?.localizedDescription ?? "Unknown error")")
+            showAuthFailedAlert()
+        }
+    }
+    
+    private func showAuthFailedAlert() {
+        let alert = UIAlertController(title: "Authentication Failed", message: "You need to authenticate to access movies.", preferredStyle: .alert)
+        
+        alert.addAction(UIAlertAction(title: "Retry", style: .default) { [weak self] _ in
+            self?.authenticateUser()
+        })
+        
+        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
+        
+        present(alert, animated: true, completion: nil)
     }
 }
 

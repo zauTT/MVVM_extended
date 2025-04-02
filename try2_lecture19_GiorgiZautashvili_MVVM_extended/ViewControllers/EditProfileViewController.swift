@@ -2,12 +2,12 @@ import UIKit
 
 class EditProfileViewController: UIViewController {
     
-    private let viewModel: EditProfileViewModel
+    private let viewModel: ProfileViewModel
     private let nameTextField = UITextField()
     private let saveButton = UIButton(type: .system)
     
     init(viewModel: ProfileViewModel) {
-        self.viewModel = EditProfileViewModel(profileViewModel: viewModel)
+        self.viewModel = viewModel
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -61,9 +61,11 @@ class EditProfileViewController: UIViewController {
             showAlert(message: "Please enter at least 2 characters")
         }
         
+        viewModel.updateName(newName: newName)
+
         if let navigationController = navigationController,
-           let profileVC = navigationController.viewControllers.first(where: {$0 is ProfileViewController}) as? ProfileViewController {
-            profileVC.updateName(newName)
+           let profileVC = navigationController.viewControllers.first(where: { $0 is ProfileViewController }) as? ProfileViewController {
+            profileVC.updateProfileName(newName)
         }
         navigationController?.popViewController(animated: true)
     }
